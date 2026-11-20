@@ -3,6 +3,7 @@ import streamlit as st
 import joblib
 import pandas as pd
 from pathlib import Path
+import altair as alt
 
 # ==========================================
 # 1. PAGE CONFIGURATION
@@ -179,17 +180,25 @@ with prediction_tab:
 
             st.subheader("Class Probability Distribution")
 
-            st.bar_chart(
-                probability_df.set_index("Category")
+            chart = (
+                alt.Chart(probability_df)
+                .mark_bar()
+                .encode(
+                    x=alt.X("Category:N", sort=None, title="Wellbeing Category"),
+                    y=alt.Y(
+                        "Probability (%):Q",
+                        scale=alt.Scale(domain=[0, 100]),
+                        title="Probability (%)"
+                    ),
+                    tooltip=[
+                        "Category",
+                        alt.Tooltip("Probability (%):Q", format=".2f")
+                    ]
+                )
+                .properties(height=350)
             )
 
-            st.dataframe(
-                probability_df.style.format({
-                    "Probability (%)": "{:.2f}%"
-                }),
-                use_container_width=True,
-                hide_index=True
-            )
+            st.altair_chart(chart, use_container_width=True)
 
         st.caption(
             "Probabilities represent the model's estimated "
